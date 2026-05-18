@@ -3,19 +3,19 @@
 # SPDX-License-Identifier: MIT
 
 """
-Detects failed teatime build logs, renames them so they sort first in CI
-artifacts/log listings, and appends a concise failure summary to the
-GitHub Actions job summary.
+Detects failed teatime build logs, copies them as 0.error.*.log
+so they sort first in CI artifact/log listings, and appends a
+concise failure summary to the GitHub Actions job summary.
 
-A log is considered failed if it contains an END line with a non-zero
-exit code.
+A log is considered failed if it contains an END line with a
+non-zero exit code.
 """
 
 from __future__ import annotations
 
 import os
 import re
-import subprocess
+import shutil
 import sys
 from pathlib import Path
 
@@ -42,22 +42,9 @@ def find_failed_logs(log_dir: Path) -> list[Path]:
     return failed
 
 
-def copy_with_sudo(src: Path, dst: Path) -> None:
-    """
-    Copy like: sudo cp src dst
-    Falls back to a normal copy if sudo is unavailable.
-    """
-    try:
-        subprocess.run(
-            ["sudo", "cp", str(src), str(dst)],
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-    except (FileNotFoundError, subprocess.CalledProcessError):
-        import shutil
-
-        shutil.copy2(src, dst)
+def copy_log(src: Path, dst: Path) -> None:
+    """Copy failed log so it sorts first in artifact listings."""
+    shutil.copy2(src, dst)
 
 
 def main() -> int:
@@ -85,7 +72,7 @@ def main() -> int:
         for src in failed_logs:
             dst = src.with_name(f"0.error.{src.name}")
             try:
-                copy_with_sudo(src, dst)
+                copy_log(src, dst)
                 print(f"Copied {src.name} -> {dst.name}")
                 summary.write(f"- `{dst.name}`\n")
                 summary.write("\n")
