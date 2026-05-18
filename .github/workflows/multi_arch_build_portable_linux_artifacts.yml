@@ -164,6 +164,19 @@ jobs:
             ${{ inputs.external_repo_config != '' && format('-DTHEROCK_{0}_SOURCE_DIR={1}', fromJSON(inputs.external_repo_config).source_package, fromJSON(inputs.external_repo_config).checkout_path) || '' }} \
             ${{ steps.stage_config.outputs.cmake_args }}
 
+      - name: Inject deterministic mock build failure
+        run: |
+          set -euo pipefail
+
+          FILE="${GITHUB_WORKSPACE}/compiler/spirv-llvm-translator/tools/llvm-spirv/llvm-spirv.cpp"
+
+          if ! grep -q 'THIS_WILL_NOT_COMPILE' "$FILE"; then
+            printf '\nTHIS_WILL_NOT_COMPILE\n' >> "$FILE"
+            echo "Injected deterministic compile error into $FILE"
+          else
+            echo "Mock failure already injected"
+          fi
+
       - name: Build stage
         run: |
           cmake --build "${BUILD_DIR}" --target stage-${STAGE_NAME} therock-artifacts -- -k 0
