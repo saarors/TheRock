@@ -8,7 +8,7 @@ artifacts/log listings, and appends a concise failure summary to the
 GitHub Actions job summary.
 
 A log is considered failed if it contains an END line with a non-zero
-exit code, matching the same behavior previously implemented with grep.
+exit code.
 """
 
 from __future__ import annotations
