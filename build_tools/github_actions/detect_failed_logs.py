@@ -42,20 +42,22 @@ def find_failed_logs(log_dir: Path) -> list[Path]:
     return failed
 
 
-def rename_with_sudo(src: Path, dst: Path) -> None:
+def copy_with_sudo(src: Path, dst: Path) -> None:
     """
-    Rename like: sudo mv src dst
-    Falls back to a normal rename if sudo is unavailable or not needed.
+    Copy like: sudo cp src dst
+    Falls back to a normal copy if sudo is unavailable.
     """
     try:
         subprocess.run(
-            ["sudo", "mv", str(src), str(dst)],
+            ["sudo", "cp", str(src), str(dst)],
             check=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
     except (FileNotFoundError, subprocess.CalledProcessError):
-        src.rename(dst)
+        import shutil
+
+        shutil.copy2(src, dst)
 
 
 def main() -> int:
@@ -83,12 +85,12 @@ def main() -> int:
         for src in failed_logs:
             dst = src.with_name(f"0.error.{src.name}")
             try:
-                rename_with_sudo(src, dst)
-                print(f"Renamed {src.name} -> {dst.name}")
+                copy_with_sudo(src, dst)
+                print(f"Copied {src.name} -> {dst.name}")
                 summary.write(f"- `{dst.name}`\n")
                 summary.write("\n")
             except OSError as e:
-                print(f"Failed to rename {src}: {e}", file=sys.stderr)
+                print(f"Failed to copy {src}: {e}", file=sys.stderr)
 
     return 0
 
