@@ -1,6 +1,6 @@
 # half
 [components.dev."base/half/stage"]
-[components.doc."base/half/stage"]
+[components.doc."base/half/stge"]
 
 
 # rocm_smi_lib
