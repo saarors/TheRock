@@ -59,7 +59,14 @@ def rename_with_sudo(src: Path, dst: Path) -> None:
 
 
 def main() -> int:
-    logs_dir = Path(os.environ["OUTPUT_DIR"]) / "build" / "logs"
+    output_dir = os.environ.get("OUTPUT_DIR")
+    build_dir = os.environ.get("BUILD_DIR", "build")
+
+    if output_dir:
+        logs_dir = Path(output_dir) / "build" / "logs"
+    else:
+        logs_dir = Path(build_dir) / "logs"
+
     summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
 
     failed_logs = find_failed_logs(logs_dir)
