@@ -133,12 +133,6 @@ jobs:
         run: |
           ctest --test-dir build --output-on-failure
 
-      - name: Detect failed logs
-        if: ${{ failure() }}
-        shell: bash
-        run: |
-          python3 build_tools/github_actions/detect_failed_logs.py
-
       - name: Report
         if: ${{ !cancelled() }}
         shell: bash
