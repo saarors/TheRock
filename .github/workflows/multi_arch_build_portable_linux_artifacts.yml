@@ -165,26 +165,26 @@ jobs:
             ${{ steps.stage_config.outputs.cmake_args }}
 
       - name: Inject deterministic mock build failure
+        shell: bash
         run: |
           set -euo pipefail
 
-          FILE="${GITHUB_WORKSPACE}/compiler/spirv-llvm-translator/tools/llvm-spirv/llvm-spirv.cpp"
+          cat > "${BUILD_DIR}/force_fail.cmake" <<'EOF'
+          message(FATAL_ERROR "Injected deterministic mock failure")
+          EOF
 
-          if ! grep -q 'THIS_WILL_NOT_COMPILE' "$FILE"; then
-            printf '\nTHIS_WILL_NOT_COMPILE\n' >> "$FILE"
-            echo "Injected deterministic compile error into $FILE"
-          else
-            echo "Mock failure already injected"
-          fi
+          echo "include(${BUILD_DIR}/force_fail.cmake)" >> "${BUILD_DIR}/CMakeLists.txt"
+
+          echo "Injected deterministic CMake failure"
 
       - name: Build stage
         run: |
           cmake --build "${BUILD_DIR}" --target stage-${STAGE_NAME} therock-artifacts -- -k 0
 
       - name: Generate failed log summaries
-        if: ${{ failure() }}
+        if: ${{ always() }}
         run: |
-          python3 ${{ github.workspace }}/.github/scripts/detect_failed_logs.py
+          python3 build_tools/github_actions/detect_failed_logs.py
 
       - name: Report
         if: ${{ !cancelled() }}

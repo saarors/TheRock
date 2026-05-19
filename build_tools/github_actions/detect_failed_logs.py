@@ -43,7 +43,12 @@ def find_failed_logs(log_dir: Path) -> list[Path]:
     return failed
 
 
-def build_excerpt(lines: list[str], window_before: int = 12, window_after: int = 20, max_lines: int = 60) -> list[str]:
+def build_excerpt(
+    lines: list[str],
+    window_before: int = 12,
+    window_after: int = 20,
+    max_lines: int = 60,
+) -> list[str]:
     """
     Return a small, deterministic excerpt centered around the first important
     failure line. Falls back to the tail of the log if nothing matches.
