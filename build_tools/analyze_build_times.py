@@ -196,19 +196,22 @@ def parse_output_path(
         return None, None, None
 
     # math-libs (special structure)
-    if top_dir == "math-libs" and len(parts) > 1:
-        if parts[1] == "BLAS":
-            name = parts[2] if len(parts) > 2 else None
-        elif parts[1] == "support" and len(parts) > 2:
-            name = parts[2]
-        else:
-            name = parts[1]
-        if not name:
-            return None, None, None
-        return NAME_MAPPING.get(name, name), CATEGORY_ROCM, phase
-
+if top_dir != "math-libs" or len(parts) < 2:
     return None, None, None
 
+sub = parts[1]
+
+if sub == "BLAS":
+    name = parts[2] if len(parts) > 2 else None
+elif sub == "support":
+    name = parts[2] if len(parts) > 2 else None
+else:
+    name = sub
+
+if not name:
+    return None, None, None
+
+return NAME_MAPPING.get(name, name), CATEGORY_ROCM, phase
 
 # =============================================================================
 # Analysis
